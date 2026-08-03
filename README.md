@@ -40,14 +40,6 @@ flowchart TD
 
 Each box inside a hybrid group is one complete Transformer layer: a token mixer followed by a Stable LatentMoE channel mixer. Normalization and Attention Residual routing are omitted from this overview; AttnRes lets modules retrieve from the embedding, earlier groups, and the current partial group instead of relying only on the immediately preceding residual stream.
 
-### Attention Residuals: routing across depth
-
-Attention Residuals (AttnRes) operate across network depth, not across token positions. Standard PreNorm residuals pass one running sum from layer to layer, so every earlier layer output has a fixed coefficient of `1`. AttnRes instead uses a learned pseudo-query for each module to compute input-dependent softmax weights over earlier representations.
-
-![Classic residual connections compared with Attention Residuals](./assets/attention-residuals.svg)
-
-Full AttnRes attends to every preceding sublayer output. Kimi K3 uses the scalable Block AttnRes variant: it keeps the embedding, completed hybrid-group summaries, and the current partial-group sum as candidates. This reduces residual-state memory from `O(Ld)` to `O(Nd)`, where `L` is the number of sublayers and `N` is the number of groups.
-
 ### Inside the KDA token mixer
 
 This expands only the KDA token-mixing component of a KDA-based Transformer layer—not the entire layer or its Stable LatentMoE component.
@@ -86,6 +78,68 @@ flowchart TD
 ```
 
 Kimi K3 keeps the KDA recurrence from Kimi Linear but bounds the decay and uses a full-rank, input-dependent output gate. The recurrence is sequential across chunks and parallel within each chunk.
+
+### Attention Residuals: routing across depth
+
+Attention Residuals (AttnRes) operate across network depth, not across token positions. Standard PreNorm residuals pass one running sum from sublayer to sublayer; AttnRes lets each attention or MoE sublayer select useful earlier representations with learned, input-dependent weights.
+
+```mermaid
+%%{init: { "htmlLabels": true, "flowchart": { "wrappingWidth": 320, "nodeSpacing": 36, "rankSpacing": 42 } } }%%
+flowchart LR
+    subgraph CLASSIC["Classic PreNorm residual · fixed depth mixing"]
+        direction TB
+        C0["<b>Embedding h₁</b>"]
+        F1["<b>Sublayer f₁(h₁)</b>"]
+        S1(("+"))
+        H2["<b>Running state h₂</b>"]
+        F2["<b>Sublayer f₂(h₂)</b>"]
+        S2(("+"))
+        H3["<b>Running state h₃</b>"]
+
+        C0 -->|identity · weight 1| S1
+        C0 --> F1 -->|weight 1| S1
+        S1 --> H2
+        H2 -->|identity · weight 1| S2
+        H2 --> F2 -->|weight 1| S2
+        S2 --> H3
+    end
+
+    subgraph ATTNRES["K3 Block AttnRes · learned depth mixing"]
+        direction TB
+        SRC["<b>Candidate representations</b><br/><small>embedding b₀<br/>completed groups b₁ … bₙ₋₁<br/>current partial group bₙ⁽ⁱ⁻¹⁾</small>"]
+        Q["<b>Learned pseudo-query wₗ</b>"]
+        SELECT["<b>Depth-wise softmax</b><br/><small>input-dependent weights α</small>"]
+        H["<b>Selected input hₗ</b>"]
+        F["<b>Attention or MoE sublayer fₗ(hₗ)</b>"]
+        UPDATE["<b>Update current group summary</b>"]
+
+        SRC -->|keys + values| SELECT
+        Q -->|query| SELECT
+        SELECT --> H --> F --> UPDATE
+    end
+
+    CLASSIC ~~~ ATTNRES
+
+    classDef state fill:#f7f7f5,stroke:#9ca3af,color:#111827;
+    classDef transform fill:#eef2ff,stroke:#818cf8,color:#312e81;
+    classDef source fill:#ecfdf5,stroke:#34d399,color:#064e3b;
+    classDef route fill:#f5f3ff,stroke:#8b5cf6,color:#4c1d95;
+    classDef sum fill:#ffffff,stroke:#9ca3af,color:#111827;
+    class C0,H2,H3 state;
+    class F1,F2,F transform;
+    class SRC,UPDATE source;
+    class Q,SELECT,H route;
+    class S1,S2 sum;
+```
+
+| | Classic PreNorm residual | K3 Block AttnRes |
+|---|---|---|
+| Depth update | `hₗ = hₗ₋₁ + fₗ₋₁(hₗ₋₁)` | `hₗ = Σᵢ αᵢ→ₗ vᵢ` |
+| Routing | Fixed coefficient `1` for every earlier output | `αᵢ→ₗ = softmaxᵢ(wₗᵀ RMSNorm(vᵢ))` |
+| Accessible history | One compressed running state | Embedding, completed groups, current partial group |
+| Residual state | `O(d)` | `O(Nd)` for `N` group summaries |
+
+Full AttnRes uses every preceding sublayer output as a candidate. Kimi K3 uses Block AttnRes to route over group-level summaries, retaining most of the selective depth access without the `O(Ld)` residual-state cost of the full form.
 
 ## References
 
