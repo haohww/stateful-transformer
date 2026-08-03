@@ -8,27 +8,27 @@ Here, `Sₜ ∈ ℝᵈᵏˣᵈᵛ` is the recurrent memory, `kₜ`, `vₜ`, and 
 
 ## Kimi K3 architecture
 
-KDA is the recurrent token mixer; the `3 KDA : 1 Gated MLA` cadence is the surrounding hybrid backbone. Kimi K3 repeats that block 23 times, then adds one final Gated MLA layer: 69 KDA and 24 Gated MLA layers in total.
+Kimi K3 has 93 Transformer layers. It organizes them as 23 hybrid groups of four layers—three KDA-based layers followed by one Gated-MLA-based layer—then adds one final Gated-MLA-based layer. This gives 69 KDA and 24 Gated MLA layers in total.
 
 ```mermaid
 %%{init: { "htmlLabels": true, "flowchart": { "wrappingWidth": 360 } } }%%
 flowchart TD
     IN["<b>Token stream</b>"]
 
-    subgraph B["Hybrid block × 23"]
+    subgraph B["Hybrid group × 23 · four Transformer layers per group"]
         direction TD
-        K1["<b>KDA</b><br/><small>fixed-size recurrent state</small>"]
-        K2["<b>KDA</b><br/><small>fixed-size recurrent state</small>"]
-        K3["<b>KDA</b><br/><small>fixed-size recurrent state</small>"]
-        MLA["<b>Gated MLA</b><br/><small>global attention · latent KV cache</small>"]
+        K1["<b>KDA-based Transformer layer</b><br/><small>KDA token mixer → Stable LatentMoE</small>"]
+        K2["<b>KDA-based Transformer layer</b><br/><small>KDA token mixer → Stable LatentMoE</small>"]
+        K3["<b>KDA-based Transformer layer</b><br/><small>KDA token mixer → Stable LatentMoE</small>"]
+        MLA["<b>Gated-MLA-based Transformer layer</b><br/><small>Gated MLA token mixer → Stable LatentMoE</small>"]
         K1 --> K2 --> K3 --> MLA
     end
 
-    LAST["<b>Final Gated MLA</b><br/><small>the last layer is always global</small>"]
+    LAST["<b>Final Gated-MLA-based Transformer layer</b><br/><small>Gated MLA token mixer → Stable LatentMoE<br/>the final token mixer is global</small>"]
     OUT["<b>Output</b>"]
 
     IN --> K1
-    MLA -->|after block 23| LAST --> OUT
+    MLA -->|after group 23| LAST --> OUT
 
     classDef kda fill:#fff7ed,stroke:#fb923c,color:#7c2d12;
     classDef mla fill:#eef2ff,stroke:#818cf8,color:#312e81;
@@ -38,9 +38,11 @@ flowchart TD
     class IN,OUT io;
 ```
 
-Every attention layer is paired with a Stable LatentMoE channel mixer. Attention Residuals separately let a layer retrieve from the embedding, earlier blocks, and the current partial block instead of relying only on the immediately preceding residual stream.
+Each box inside a hybrid group is one complete Transformer layer: a token mixer followed by a Stable LatentMoE channel mixer. Normalization and Attention Residual routing are omitted from this overview; AttnRes lets modules retrieve from the embedding, earlier groups, and the current partial group instead of relying only on the immediately preceding residual stream.
 
-### Inside a KDA layer
+### Inside the KDA token mixer
+
+This expands only the KDA token-mixing component of a KDA-based Transformer layer—not the entire layer or its Stable LatentMoE component.
 
 ```mermaid
 %%{init: { "htmlLabels": true, "flowchart": { "wrappingWidth": 520 } } }%%
