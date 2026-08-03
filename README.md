@@ -2,27 +2,7 @@
 
 Linear attention can be viewed as a recurrent key-value memory. Its evolution is mainly a story of increasingly precise control over what that fixed-size state retains.
 
-```mermaid
-%%{init: { "htmlLabels": true, "flowchart": { "wrappingWidth": 640 } } }%%
-flowchart TD
-    LA["<b>Linear Attention</b> · 2020<br/><code>Sₜ&nbsp;=&nbsp;Sₜ₋₁&nbsp;+&nbsp;kₜvₜᵀ</code><br/><small>Add every key-value association</small>"]
-    DN["<b>DeltaNet</b> · 2021<br/><code>Sₜ&nbsp;=&nbsp;(I&nbsp;−&nbsp;βₜkₜkₜᵀ)Sₜ₋₁&nbsp;+&nbsp;βₜkₜvₜᵀ</code><br/><small>Correct the value stored at the current key</small>"]
-    GDN["<b>Gated DeltaNet</b> · 2025<br/><code>Sₜ&nbsp;=&nbsp;αₜ(I&nbsp;−&nbsp;βₜkₜkₜᵀ)Sₜ₋₁&nbsp;+&nbsp;βₜkₜvₜᵀ</code><br/><small>Add scalar, token-wise state decay</small>"]
-    KDA["<b>Kimi Delta Attention</b> · 2025<br/><code>Sₜ&nbsp;=&nbsp;(I&nbsp;−&nbsp;βₜkₜkₜᵀ)Diag(αₜ)Sₜ₋₁&nbsp;+&nbsp;βₜkₜvₜᵀ</code><br/><small>Replace scalar decay with fine-grained diagonal decay</small>"]
-
-    LA -->|additive memory cannot edit associations| DN
-    DN -->|targeted edits cannot quickly clear unrelated memory| GDN
-    GDN -->|one decay rate is too coarse| KDA
-
-    classDef linear fill:#f7f7f5,stroke:#9ca3af,color:#111827;
-    classDef delta fill:#ecfdf5,stroke:#34d399,color:#064e3b;
-    classDef gated fill:#eef2ff,stroke:#818cf8,color:#312e81;
-    classDef kimi fill:#fff7ed,stroke:#fb923c,color:#7c2d12;
-    class LA linear;
-    class DN delta;
-    class GDN gated;
-    class KDA kimi;
-```
+![Evolution from Linear Attention to Kimi Delta Attention](./assets/attention-evolution.svg)
 
 Here, `Sₜ ∈ ℝᵈᵏˣᵈᵛ` is the recurrent memory, `kₜ`, `vₜ`, and `qₜ` are the key, value, and query, `βₜ` is the write strength, and `αₜ` is the forget gate; the readout is `oₜ = Sₜᵀqₜ`. Gated DeltaNet uses a scalar `αₜ`, while KDA promotes it to a vector and applies `Diag(αₜ)`.
 
