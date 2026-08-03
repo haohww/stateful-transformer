@@ -3,11 +3,12 @@
 Linear attention can be viewed as a recurrent key-value memory. Its evolution is mainly a story of increasingly precise control over what that fixed-size state retains.
 
 ```mermaid
+%%{init: { "htmlLabels": true, "flowchart": { "wrappingWidth": 640 } } }%%
 flowchart TD
-    LA["<b>Linear Attention</b> · 2020<br/><code>Sₜ = Sₜ₋₁ + kₜvₜᵀ</code><br/><small>Add every key-value association</small>"]
-    DN["<b>DeltaNet</b> · 2021<br/><code>Sₜ = (I − βₜkₜkₜᵀ)Sₜ₋₁ + βₜkₜvₜᵀ</code><br/><small>Correct the value stored at the current key</small>"]
-    GDN["<b>Gated DeltaNet</b> · 2025<br/><code>Sₜ = αₜ(I − βₜkₜkₜᵀ)Sₜ₋₁ + βₜkₜvₜᵀ</code><br/><small>Add scalar, token-wise state decay</small>"]
-    KDA["<b>Kimi Delta Attention</b> · 2025<br/><code>Sₜ = (I − βₜkₜkₜᵀ)Diag(αₜ)Sₜ₋₁ + βₜkₜvₜᵀ</code><br/><small>Replace scalar decay with fine-grained diagonal decay</small>"]
+    LA["<b>Linear Attention</b> · 2020<br/><code>Sₜ&nbsp;=&nbsp;Sₜ₋₁&nbsp;+&nbsp;kₜvₜᵀ</code><br/><small>Add every key-value association</small>"]
+    DN["<b>DeltaNet</b> · 2021<br/><code>Sₜ&nbsp;=&nbsp;(I&nbsp;−&nbsp;βₜkₜkₜᵀ)Sₜ₋₁&nbsp;+&nbsp;βₜkₜvₜᵀ</code><br/><small>Correct the value stored at the current key</small>"]
+    GDN["<b>Gated DeltaNet</b> · 2025<br/><code>Sₜ&nbsp;=&nbsp;αₜ(I&nbsp;−&nbsp;βₜkₜkₜᵀ)Sₜ₋₁&nbsp;+&nbsp;βₜkₜvₜᵀ</code><br/><small>Add scalar, token-wise state decay</small>"]
+    KDA["<b>Kimi Delta Attention</b> · 2025<br/><code>Sₜ&nbsp;=&nbsp;(I&nbsp;−&nbsp;βₜkₜkₜᵀ)Diag(αₜ)Sₜ₋₁&nbsp;+&nbsp;βₜkₜvₜᵀ</code><br/><small>Replace scalar decay with fine-grained diagonal decay</small>"]
 
     LA -->|additive memory cannot edit associations| DN
     DN -->|targeted edits cannot quickly clear unrelated memory| GDN
