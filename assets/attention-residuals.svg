@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="820" viewBox="0 0 1440 820" role="img" aria-labelledby="title desc">
+  <title id="title">Classic residual connections compared with K3 Block Attention Residuals</title>
+  <desc id="desc">Classic residuals accumulate a fixed running state. Block Attention Residuals select from the embedding, completed group summaries, and the current partial group using learned depth-wise softmax weights.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#6b7280"/>
+    </marker>
+    <style>
+      .sans{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+      .mono{font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace}
+      .title{font-size:23px;font-weight:700;fill:#111827}.subtitle{font-size:15px;fill:#6b7280}
+      .formula{font-size:17px;fill:#111827}.name{font-size:17px;font-weight:700;fill:#111827}
+      .note{font-size:14px;fill:#4b5563}.callout{font-size:16px;font-weight:700;fill:#111827}
+      .edge{stroke:#6b7280;stroke-width:2;fill:none}.route{stroke:#8b5cf6;stroke-width:2;fill:none}
+    </style>
+  </defs>
+  <rect width="1440" height="820" rx="18" fill="#fff"/>
+
+  <rect x="35" y="32" width="670" height="756" rx="18" fill="#fafaf9" stroke="#d6d3d1" stroke-width="2"/>
+  <text class="sans title" x="70" y="78">Classic PreNorm residual</text>
+  <text class="sans subtitle" x="70" y="108">Fixed accumulation through one running state</text>
+  <rect x="70" y="135" width="600" height="78" rx="12" fill="#fff" stroke="#d6d3d1"/>
+  <text class="mono formula" x="96" y="168">hₗ = hₗ₋₁ + fₗ₋₁(hₗ₋₁)</text>
+  <text class="mono formula" x="96" y="198">= h₁ + Σᶫ⁻¹ᵢ₌₁ fᵢ(hᵢ)</text>
+
+  <rect x="75" y="305" width="150" height="62" rx="11" fill="#f3f4f6" stroke="#9ca3af"/>
+  <text class="sans name" x="150" y="342" text-anchor="middle">Embedding h₁</text>
+  <rect x="235" y="240" width="150" height="52" rx="10" fill="#eef2ff" stroke="#818cf8"/>
+  <text class="mono note" x="310" y="272" text-anchor="middle">f₁(h₁)</text>
+  <circle cx="310" cy="336" r="25" fill="#fff" stroke="#9ca3af" stroke-width="2"/>
+  <text class="sans title" x="310" y="344" text-anchor="middle">+</text>
+  <rect x="400" y="305" width="120" height="62" rx="11" fill="#f3f4f6" stroke="#9ca3af"/>
+  <text class="sans name" x="460" y="342" text-anchor="middle">h₂</text>
+  <rect x="510" y="240" width="150" height="52" rx="10" fill="#eef2ff" stroke="#818cf8"/>
+  <text class="mono note" x="585" y="272" text-anchor="middle">f₂(h₂)</text>
+  <circle cx="585" cy="336" r="25" fill="#fff" stroke="#9ca3af" stroke-width="2"/>
+  <text class="sans title" x="585" y="344" text-anchor="middle">+</text>
+  <rect x="622" y="305" width="48" height="62" rx="11" fill="#f3f4f6" stroke="#9ca3af"/>
+  <text class="sans name" x="646" y="342" text-anchor="middle">h₃</text>
+
+  <line x1="225" y1="336" x2="277" y2="336" class="edge" marker-end="url(#arrow)"/>
+  <line x1="310" y1="292" x2="310" y2="303" class="edge" marker-end="url(#arrow)"/>
+  <line x1="335" y1="336" x2="392" y2="336" class="edge" marker-end="url(#arrow)"/>
+  <line x1="520" y1="336" x2="552" y2="336" class="edge" marker-end="url(#arrow)"/>
+  <line x1="585" y1="292" x2="585" y2="303" class="edge" marker-end="url(#arrow)"/>
+  <line x1="610" y1="336" x2="614" y2="336" class="edge" marker-end="url(#arrow)"/>
+
+  <rect x="70" y="438" width="600" height="128" rx="12" fill="#fff7ed" stroke="#fb923c"/>
+  <text class="sans callout" x="96" y="478">Fixed depth routing</text>
+  <text class="sans note" x="96" y="513">Every earlier output has coefficient 1.</text>
+  <text class="sans note" x="96" y="542">A sublayer can access only the compressed state hₗ₋₁.</text>
+  <rect x="70" y="610" width="600" height="96" rx="12" fill="#f3f4f6"/>
+  <text class="sans name" x="96" y="650">Residual state</text>
+  <text class="mono formula" x="96" y="682">one vector · O(d)</text>
+
+  <rect x="735" y="32" width="670" height="756" rx="18" fill="#fafaf9" stroke="#818cf8" stroke-width="2"/>
+  <text class="sans title" x="770" y="78">K3 Block Attention Residuals</text>
+  <text class="sans subtitle" x="770" y="108">Input-dependent selection across depth</text>
+  <rect x="770" y="135" width="600" height="78" rx="12" fill="#fff" stroke="#c7d2fe"/>
+  <text class="mono formula" x="796" y="168">hₗ = Σᵢ αᵢ→ₗ vᵢ</text>
+  <text class="mono formula" x="796" y="198">αᵢ→ₗ = softmaxᵢ(wₗᵀ RMSNorm(vᵢ))</text>
+
+  <rect x="770" y="252" width="192" height="48" rx="10" fill="#f3f4f6" stroke="#9ca3af"/>
+  <text class="sans note" x="866" y="282" text-anchor="middle">Embedding b₀</text>
+  <rect x="770" y="316" width="192" height="48" rx="10" fill="#f3f4f6" stroke="#9ca3af"/>
+  <text class="sans note" x="866" y="346" text-anchor="middle">Completed group b₁</text>
+  <rect x="770" y="380" width="192" height="48" rx="10" fill="#f3f4f6" stroke="#9ca3af"/>
+  <text class="sans note" x="866" y="410" text-anchor="middle">Completed group b₂</text>
+  <rect x="770" y="444" width="192" height="60" rx="10" fill="#ecfdf5" stroke="#34d399"/>
+  <text class="sans note" x="866" y="468" text-anchor="middle">Current partial group</text>
+  <text class="mono note" x="866" y="490" text-anchor="middle">bₙ⁽ⁱ⁻¹⁾</text>
+
+  <rect x="1012" y="318" width="190" height="112" rx="14" fill="#f5f3ff" stroke="#8b5cf6" stroke-width="2"/>
+  <text class="sans name" x="1107" y="356" text-anchor="middle" fill="#4c1d95">Depth-wise</text>
+  <text class="sans name" x="1107" y="381" text-anchor="middle" fill="#4c1d95">softmax selector</text>
+  <text class="sans note" x="1107" y="410" text-anchor="middle">weights α</text>
+  <rect x="1032" y="238" width="150" height="48" rx="10" fill="#fff7ed" stroke="#fb923c"/>
+  <text class="mono note" x="1107" y="268" text-anchor="middle">pseudo-query wₗ</text>
+  <rect x="1245" y="340" width="125" height="68" rx="11" fill="#eef2ff" stroke="#818cf8"/>
+  <text class="sans name" x="1307" y="369" text-anchor="middle">Selected</text>
+  <text class="mono note" x="1307" y="392" text-anchor="middle">input hₗ</text>
+
+  <path d="M962 276L1005 340" class="route" marker-end="url(#arrow)"/><path d="M962 340L1004 356" class="route" marker-end="url(#arrow)"/>
+  <path d="M962 404L1004 392" class="route" marker-end="url(#arrow)"/><path d="M962 474L1005 412" class="route" marker-end="url(#arrow)"/>
+  <line x1="1107" y1="286" x2="1107" y2="310" stroke="#fb923c" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="1202" y1="374" x2="1237" y2="374" class="route" marker-end="url(#arrow)"/>
+
+  <rect x="770" y="548" width="600" height="118" rx="12" fill="#ecfdf5" stroke="#34d399"/>
+  <text class="sans callout" x="796" y="588">Learned depth routing</text>
+  <text class="sans note" x="796" y="623">Each sublayer can emphasize or suppress earlier representations.</text>
+  <text class="sans note" x="796" y="650">K3 routes over group summaries instead of every sublayer output.</text>
+  <rect x="770" y="692" width="600" height="58" rx="12" fill="#f3f4f6"/>
+  <text class="sans name" x="796" y="728">Residual state: N group summaries · O(Nd)</text>
+</svg>

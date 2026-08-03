@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900" role="img" aria-labelledby="title desc">
+  <title id="title">Inside the Kimi Delta Attention token mixer</title>
+  <desc id="desc">Input projections produce query, key, value, retention, and write strength for the recurrent KDA memory, followed by normalization, output gating, and projection.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#6b7280"/>
+    </marker>
+    <style>
+      .sans{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+      .mono{font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace}
+      .title{font-size:25px;font-weight:700;fill:#111827}.name{font-size:19px;font-weight:700}
+      .note{font-size:14px}.formula{font-size:18px;fill:#7c2d12}.edge{stroke:#6b7280;stroke-width:2;fill:none}
+    </style>
+  </defs>
+  <rect width="1440" height="900" rx="18" fill="#fff"/>
+  <text class="sans title" x="720" y="42" text-anchor="middle">Inside the KDA token mixer</text>
+
+  <rect x="620" y="70" width="200" height="62" rx="11" fill="#f7f7f5" stroke="#9ca3af" stroke-width="2"/>
+  <text class="sans name" x="720" y="108" text-anchor="middle" fill="#111827">Input xₜ</text>
+
+  <rect x="45" y="205" width="280" height="100" rx="13" fill="#ecfdf5" stroke="#34d399" stroke-width="2"/>
+  <text class="sans name" x="185" y="242" text-anchor="middle" fill="#064e3b">Query qₜ and key kₜ</text>
+  <text class="sans note" x="185" y="276" text-anchor="middle" fill="#065f46">Linear → ShortConv → Swish → L2Norm</text>
+
+  <rect x="370" y="205" width="250" height="100" rx="13" fill="#ecfdf5" stroke="#34d399" stroke-width="2"/>
+  <text class="sans name" x="495" y="242" text-anchor="middle" fill="#064e3b">Value vₜ</text>
+  <text class="sans note" x="495" y="276" text-anchor="middle" fill="#065f46">Linear → ShortConv → Swish</text>
+
+  <rect x="665" y="205" width="300" height="100" rx="13" fill="#ecfdf5" stroke="#34d399" stroke-width="2"/>
+  <text class="sans name" x="815" y="242" text-anchor="middle" fill="#064e3b">Channel retention αₜ</text>
+  <text class="sans note" x="815" y="276" text-anchor="middle" fill="#065f46">Low-rank logits → lower-bounded decay</text>
+
+  <rect x="1010" y="205" width="250" height="100" rx="13" fill="#ecfdf5" stroke="#34d399" stroke-width="2"/>
+  <text class="sans name" x="1135" y="242" text-anchor="middle" fill="#064e3b">Write strength βₜ</text>
+  <text class="sans note" x="1135" y="276" text-anchor="middle" fill="#065f46">Linear → sigmoid</text>
+
+  <path class="edge" d="M690 132 C600 160 300 155 185 197" marker-end="url(#arrow)"/>
+  <path class="edge" d="M705 132 C650 165 545 165 495 197" marker-end="url(#arrow)"/>
+  <path class="edge" d="M735 132 C760 160 800 165 815 197" marker-end="url(#arrow)"/>
+  <path class="edge" d="M760 132 C860 155 1060 160 1135 197" marker-end="url(#arrow)"/>
+
+  <rect x="250" y="382" width="940" height="138" rx="15" fill="#fff7ed" stroke="#fb923c" stroke-width="2"/>
+  <text class="sans name" x="720" y="420" text-anchor="middle" fill="#7c2d12">Recurrent associative memory</text>
+  <text class="mono formula" x="720" y="462" text-anchor="middle">Sₜ = (I − βₜkₜkₜᵀ)Diag(αₜ)Sₜ₋₁ + βₜkₜvₜᵀ</text>
+  <text class="mono note" x="720" y="495" text-anchor="middle" fill="#9a3412">read: õₜ = Sₜᵀqₜ</text>
+
+  <path class="edge" d="M185 305 C260 345 380 350 470 376" marker-end="url(#arrow)"/>
+  <path class="edge" d="M495 305 C530 340 565 350 595 376" marker-end="url(#arrow)"/>
+  <path class="edge" d="M815 305 C800 340 790 350 785 376" marker-end="url(#arrow)"/>
+  <path class="edge" d="M1135 305 C1080 345 1010 350 970 376" marker-end="url(#arrow)"/>
+
+  <rect x="300" y="590" width="310" height="78" rx="12" fill="#eef2ff" stroke="#818cf8" stroke-width="2"/>
+  <text class="sans name" x="455" y="637" text-anchor="middle" fill="#312e81">Head-wise RMSNorm</text>
+  <line x1="560" y1="520" x2="475" y2="583" class="edge" marker-end="url(#arrow)"/>
+
+  <rect x="930" y="560" width="300" height="108" rx="12" fill="#eef2ff" stroke="#818cf8" stroke-width="2"/>
+  <text class="sans name" x="1080" y="602" text-anchor="middle" fill="#312e81">Full-rank output gate</text>
+  <text class="mono note" x="1080" y="638" text-anchor="middle" fill="#3730a3">sigmoid(Wg xₜ)</text>
+  <path class="edge" d="M790 132 C1230 190 1320 390 1080 552" marker-end="url(#arrow)"/>
+
+  <rect x="515" y="722" width="400" height="82" rx="12" fill="#f5f3ff" stroke="#8b5cf6" stroke-width="2"/>
+  <text class="sans name" x="715" y="771" text-anchor="middle" fill="#4c1d95">Gate × normalized readout</text>
+  <path class="edge" d="M455 668 C480 700 555 705 610 716" marker-end="url(#arrow)"/>
+  <path class="edge" d="M1080 668 C1030 700 930 705 850 716" marker-end="url(#arrow)"/>
+
+  <rect x="965" y="722" width="270" height="82" rx="12" fill="#eef2ff" stroke="#818cf8" stroke-width="2"/>
+  <text class="sans name" x="1100" y="758" text-anchor="middle" fill="#312e81">Output projection</text>
+  <text class="mono note" x="1100" y="783" text-anchor="middle" fill="#3730a3">Wₒ</text>
+  <line x1="915" y1="763" x2="957" y2="763" class="edge" marker-end="url(#arrow)"/>
+
+  <rect x="1280" y="722" width="120" height="82" rx="12" fill="#f7f7f5" stroke="#9ca3af" stroke-width="2"/>
+  <text class="sans name" x="1340" y="771" text-anchor="middle" fill="#111827">yₜ</text>
+  <line x1="1235" y1="763" x2="1272" y2="763" class="edge" marker-end="url(#arrow)"/>
+
+  <rect x="250" y="842" width="940" height="42" rx="10" fill="#f3f4f6"/>
+  <text class="sans note" x="720" y="868" text-anchor="middle" fill="#4b5563">Recurrent across chunks · parallel within each chunk</text>
+</svg>
