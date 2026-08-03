@@ -1,4 +1,4 @@
-# Stateful Transformer
+# Recurrent Transformer
 
 Linear attention can be viewed as a recurrent key-value memory. Its evolution is mainly a story of increasingly precise control over what that fixed-size state retains.
 
@@ -39,6 +39,14 @@ flowchart TD
 ```
 
 Each box inside a hybrid group is one complete Transformer layer: a token mixer followed by a Stable LatentMoE channel mixer. Normalization and Attention Residual routing are omitted from this overview; AttnRes lets modules retrieve from the embedding, earlier groups, and the current partial group instead of relying only on the immediately preceding residual stream.
+
+### Attention Residuals: routing across depth
+
+Attention Residuals (AttnRes) operate across network depth, not across token positions. Standard PreNorm residuals pass one running sum from layer to layer, so every earlier layer output has a fixed coefficient of `1`. AttnRes instead uses a learned pseudo-query for each module to compute input-dependent softmax weights over earlier representations.
+
+![Classic residual connections compared with Attention Residuals](./assets/attention-residuals.svg)
+
+Full AttnRes attends to every preceding sublayer output. Kimi K3 uses the scalable Block AttnRes variant: it keeps the embedding, completed hybrid-group summaries, and the current partial-group sum as candidates. This reduces residual-state memory from `O(Ld)` to `O(Nd)`, where `L` is the number of sublayers and `N` is the number of groups.
 
 ### Inside the KDA token mixer
 
@@ -85,4 +93,5 @@ Kimi K3 keeps the KDA recurrence from Kimi Linear but bounds the decay and uses 
 - [Linear Transformers Are Secretly Fast Weight Programmers](https://proceedings.mlr.press/v139/schlag21a.html) — Schlag et al., 2021
 - [Gated Delta Networks: Improving Mamba2 with Delta Rule](https://arxiv.org/abs/2412.06464) — Yang et al., ICLR 2025
 - [Kimi Linear: An Expressive, Efficient Attention Architecture](https://arxiv.org/abs/2510.26692) — Kimi Team, 2025
+- [Attention Residuals](https://arxiv.org/abs/2603.15031) — Kimi Team, 2026
 - [Kimi K3: Open Frontier Intelligence](https://arxiv.org/abs/2607.24653) — Kimi Team, 2026
